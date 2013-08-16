@@ -1,0 +1,20 @@
+# A sample hosts file for the sandbox (or other VM) for setting cloud
+# host names such that the Monitor does not depend on DNS entries
+
+127.0.0.1   localhost.localdomain localhost sandbox.momentumsoftware.c
+
+# MomentumSI Cloud Machines
+10.0.0.1    msicloud1.momentumsoftware.com msicloud1
+10.0.0.2    msicloud2.momentumsoftware.com msicloud2
+10.0.0.3    msicloud3.momentumsoftware.com msicloud3
+10.0.0.4    msicloud4.momentumsoftware.com msicloud4
+10.0.0.5    msicloud5.momentumsoftware.com msicloud5
+10.0.0.6    msicloud6.momentumsoftware.com msicloud6
+10.0.0.7    msicloud7.momentumsoftware.com msicloud7
+10.0.0.8    msicloud8.momentumsoftware.com msicloud8
+10.0.0.9    msicloud9.momentumsoftware.com msicloud9
+10.0.0.10   msicloud10.momentumsoftware.com msicloud10
+10.0.0.11   msicloud11.momentumsoftware.com msicloud11
+
+# for direct access to the repositories (look to /etc/yum.repos.d)
+10.0.0.210  msiiscsi.cloudlab.momentumsi.com

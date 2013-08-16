@@ -1,0 +1,10 @@
+package topstack_Autoscale;
+
+option java_package = "com.transcend.monitor.message";
+option java_outer_classname = "PlaceholderFakeMessage";
+
+message PlaceholderMessage {
+    required string requestId = 1;
+    required string callerAccessKey = 2;
+}
+

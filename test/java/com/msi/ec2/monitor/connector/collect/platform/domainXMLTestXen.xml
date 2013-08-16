@@ -1,0 +1,39 @@
+<domain type='xen' id='2'>
+  <name>EFrontEnd</name>
+  <uuid>9f874faa-4e83-28be-91fc-f2addecd6d67</uuid>
+  <memory>2097152</memory>
+  <currentMemory>2097152</currentMemory>
+  <vcpu>1</vcpu>
+  <bootloader>/usr/bin/pygrub</bootloader>
+  <os>
+    <type>linux</type>
+    <kernel>/var/lib/xen/boot_kernel.dRJLwT</kernel>
+    <initrd>/var/lib/xen/boot_ramdisk.JAKK1Y</initrd>
+    <cmdline>ro root=/dev/VolGroup00/LogVol00 console=xvc0 rhgb quiet</cmdline>
+  </os>
+  <clock offset='utc'/>
+  <on_poweroff>destroy</on_poweroff>
+  <on_reboot>restart</on_reboot>
+  <on_crash>restart</on_crash>
+  <devices>
+    <disk type='file' device='disk'>
+      <driver name='tap' type='aio'/>
+      <source file='/var/lib/Eucalyptus/ecc.img'/>
+      <target dev='xvda' bus='xen'/>
+    </disk>
+    <disk type='file' device='disk'>
+      <driver name='file'/>
+      <source file='/var/lib/Eucalyptus/evarlib.loop'/>
+      <target dev='xvdb' bus='xen'/>
+    </disk>
+    <interface type='bridge'>
+      <mac address='00:16:3e:5f:6f:34'/>
+      <source bridge='xenbr0'/>
+      <script path='vif-bridge'/>
+      <target dev='vif2.0'/>
+    </interface>
+    <console type='pty'>
+      <target port='0'/>
+    </console>
+  </devices>
+</domain>

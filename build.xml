@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project basedir="." name="Monitor" default="war.all">
+
+	<property name="name" value="Monitor" />
+	<property file="${user.home}/${name}.properties"/>
+	<property file="${user.home}/build.properties"/>
+	<property name="config.filename" value="${user.name}.properties"/>
+	<property file="${config.filename}"/>
+	<property file="build.properties"/>
+  <property name="scheduler.enabled" value="true" />
+
+	<property name="project.base.dir" value="." />
+	<property environment="env" />
+	<property name="debuglevel" value="source,lines,vars" />
+	<property name="src" value="${project.base.dir}/src" />
+	<property name="resources" value="${project.base.dir}/resources" />
+	<property name="WebContent" value="${project.base.dir}/WebContent" />
+	<property name="test" value="${project.base.dir}/test" />
+	<property name="build" value="${project.base.dir}/build" />
+	<property name="war" value="${build}/war" />
+	<property name="classes" value="${war}/WEB-INF/classes" />
+	<property name="warlib" value="${war}/WEB-INF/lib" />
+	<property name="lib" value="${build}/lib" />
+	<property name="build.dir" location="build" />
+	<property name="classes.dir" location="${build.dir}/classes" />
+	<property name="resources.dir" location="resources" />
+	<property name="target.war.name" value="monitor.war" />
+	<property name="target.war" location="${build.dir}/lib/${target.war.name}" />
+	<property name="web.xml" location="${classes.dir}/WEB-INF/web.xml" />
+	<property name="web.lib" location="${classes.dir}/WEB-INF/lib" />
+	<property name="external" value="${build}/external" />
+	<property name="external.dir" location="${build.dir}/external" />
+	<property name="external.jars" value="${build}/external/lib" />
+	<property name="external.lib" value="${build}/external/lib" />
+	<property name="maven.compat" value="true"/>
+	<property name="hudson.url" value="jenkins.momentumsoftware.com:8080/" />
+
+    <property name="dist.suffix" value="" />
+    <property name="toughresources" value="TopStackResources${dist.suffix}" />
+	<property name="toughresources.dir" value="${project.base.dir}/../${toughresources}"/>
+
+    <property name="message.dir" value="${src}/com/transcend/monitor/message" />
+
+    <import file="${toughresources.dir}/common.build.xml" />
+
+	<path id="war.lib.classpath">
+		<fileset dir="${web.lib}">
+			<include name="**/*.jar" />
+		</fileset>
+	</path>
+
+    <!-- general targets -->
+	<target name="init">
+		<mkdir dir="${classes.dir}" />
+		<mkdir dir="${build.dir}/lib" />
+		<mkdir dir="${external.dir}" />
+		<mkdir dir="${external.lib}" />
+		<mkdir dir="${web.lib}" />
+	</target>
+
+    <property name="monitorcommon" value="TopStackMonitorCommon${dist.suffix}" />
+    <property name="scheduler" value="TopStackScheduler${dist.suffix}" />
+
+    <target name="copy-dependencies-dev" description="Get the project from local checkout builds" depends="init, maven.init" if="is.development">
+        <echo message="Development Build - gathering dependencies"/>
+        <dependencies-dev-maven>
+            <dependencies>
+                <copy toFile="${external}/tough-resources-additional.zip" file="${toughresources.dir}/build/lib/tough-resources-additional.zip"/>
+                <unzip dest="${external.jars}" src="${external}/tough-resources-additional.zip"/>
+                <copy todir="${external.jars}" file="${project.base.dir}/../${monitorcommon}/build/lib/tough-monitor-common.jar"></copy>
+            </dependencies>
+        </dependencies-dev-maven>
+    </target>
+
+    <target name="copy-dependencies-hudson" description="Get the project from hudson" depends="init, maven.init" unless="is.development">
+        <echo message="Hudson Build - gathering dependencies"/>
+        <dependencies-jenkins-maven>
+            <dependencies>
+                <get src="http://${hudson.url}/job/${toughresources}/@{project.build.number}/artifact/build/lib/tough-resources-additional.zip"
+                    dest="${external}/tough-resources-additional.zip"/>
+                <unzip dest="${external.jars}" src="${external}/tough-resources-additional.zip"/>
+                <get src="http://${hudson.url}/job/${monitorcommon}/@{project.build.number}/artifact/build/lib/tough-monitor-common.jar"
+                    dest="${external.jars}/tough-monitor-common.jar"/>
+            </dependencies>
+        </dependencies-jenkins-maven>
+        <copy todir="${warlib}">
+            <fileset dir="${project.lib}"/>
+        </copy>
+    </target>
+
+    <!-- Package test base classes and utilities for re-use in descendents -->
+    <target name="jar.client" depends="run.tests">
+        <jar destfile="${lib}/${name}-client.jar">
+            <fileset dir="${classes}">
+                <include name="*.ports" />
+                <include name="**/${message.path}/*.class" />
+            </fileset>
+        </jar>
+    </target>
+
+	<target name="war.all" depends="compile.proto, compile.src, copy.config, copyWebContent">
+		<war.all.maven>
+			<war-lib-patterns>
+                <exclude name="apache-cassandra-*"/>
+                <exclude name="axis*"/>
+			    <exclude name="mindterm*"/>
+                <exclude name="hazelcast*"/>
+			    <!-- following 3 are for memcache, no access currently. -->
+                <exclude name="spymemcached*"/>
+                <exclude name="jettison*"/>
+                <exclude name="netty*"/>
+                <exclude name="zookeeper*"/>
+                <exclude name="urlrewrite*"/>
+		    </war-lib-patterns>
+			<war-classes/>
+		</war.all.maven>
+	</target>
+
+    <target name="clean.deploy" depends="clean, run.tests, war.all, deploy"/>
+	
+    <target name="maven.deploy" depends="jar.client, dist, maven.deploy.war.n.client">
+    </target>
+</project>

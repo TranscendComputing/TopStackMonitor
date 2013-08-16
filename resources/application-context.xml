@@ -1,0 +1,251 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:oxm="http://www.springframework.org/schema/oxm"
+	xmlns:jdbc="http://www.springframework.org/schema/jdbc" xmlns:lang="http://www.springframework.org/schema/lang"
+	xmlns:p="http://www.springframework.org/schema/p" xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:util="http://www.springframework.org/schema/util"
+    xmlns:context="http://www.springframework.org/schema/context"
+
+    xmlns:rabbit="http://www.springframework.org/schema/rabbit"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+		http://www.springframework.org/schema/jdbc http://www.springframework.org/schema/jdbc/spring-jdbc-3.0.xsd
+		http://www.springframework.org/schema/lang http://www.springframework.org/schema/lang/spring-lang-3.0.xsd
+		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.0.xsd
+		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-3.0.xsd
+        http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-2.5.xsd
+        http://www.springframework.org/schema/rabbit
+        http://www.springframework.org/schema/rabbit/spring-rabbit-1.0.xsd">
+
+    <bean id="serviceName" class="java.lang.String">
+        <constructor-arg value="monitor"/>
+    </bean>
+
+    <!-- ============================== 	-->
+    <import resource="commonservices-context.xml" />
+    <import resource="scheduler-context.xml"/>
+
+    <!-- Run common annotations; e.g. PostConstruct/PreDestroy. -->
+    <context:annotation-config />
+
+    <!-- inject compute util classes (helpers, etc.) -->
+    <context:component-scan base-package="com.msi.compute" />
+    <!-- inject core action classes (ActionHelper, etc.) -->
+    <context:component-scan base-package="com.msi.tough.query" />
+    <!-- inject project action classes (Describe, etc.) -->
+    <context:component-scan base-package="com.msi.tough.monitor" />
+    <context:component-scan base-package="com.transcend.monitor" />
+
+    <bean id="MonitorActionsQuery" class="com.msi.tough.monitor.Service">
+        <constructor-arg>
+            <map>
+                <entry key="AddHypervisorConfig">
+                    <bean class="com.msi.tough.monitor.actions.AddHypervisorConfig" />
+                </entry>
+                <entry key="DeleteHypervisorConfig">
+                    <bean class="com.msi.tough.monitor.actions.DeleteHypervisorConfig" />
+                </entry>
+                <entry key="ReloadHypervisorConfig">
+                    <bean class="com.msi.tough.monitor.actions.ReloadHypervisorConfig" />
+                </entry>
+                <entry key="ViewHypervisorConfig">
+                    <bean class="com.msi.tough.monitor.actions.ViewHypervisorConfig" />
+                </entry>
+                <entry key="CheckAlarms">
+                    <bean class="com.msi.tough.monitor.actions.CheckAlarms" />
+                </entry>
+                <entry key="GatherAS">
+                    <bean class="com.msi.tough.monitor.actions.GatherAS" />
+                </entry>
+                <entry key="GatherECache">
+                    <bean class="com.msi.tough.monitor.actions.GatherECache" />
+                </entry>
+                <entry key="GatherLoadBalancer">
+                    <bean class="com.msi.tough.monitor.actions.GatherLoadBalancer" />
+                </entry>
+                <entry key="GatherRDBMS">
+                    <bean class="com.msi.tough.monitor.actions.GatherRDBMS" />
+                </entry>
+            </map>
+        </constructor-arg>
+    </bean>
+
+    <!-- Code used to use connect flags of 3; does not appear to be supported. -->
+    <bean id="virtConnector" class="com.msi.tough.monitor.connector.platform.VirtConnector" factory-method="setConnectFlags">
+        <constructor-arg value="1"/>
+    </bean>
+
+    <bean id="schedulerInit" class="com.msi.tough.scheduler.SchedulerInit">
+        <property name="enabled" value="${scheduler.enabled}" />
+    </bean>
+
+    <!-- Beans to support communication with Monitor agents -->
+    <rabbit:connection-factory id="queueConnectionFactory" host="localhost" port="5672"
+    virtual-host="/monitor" username="transcend" password="transcend" />
+
+    <rabbit:admin connection-factory="queueConnectionFactory"/>
+
+    <rabbit:queue id="agent-queue" name="agent-queue-${install.id}" />
+
+    <fanout-exchange name="amq.fanout" xmlns="http://www.springframework.org/schema/rabbit">
+        <bindings>
+            <binding queue="agent-queue" />
+        </bindings>
+    </fanout-exchange>
+
+    <bean id="jsonConverter" class="org.springframework.amqp.support.converter.JsonMessageConverter">
+        <property name="classMapper">
+            <bean class="org.springframework.amqp.support.converter.DefaultClassMapper">
+                <property name="defaultType"
+                    value="java.util.ArrayList" />
+            </bean>
+        </property>
+    </bean>
+
+    <rabbit:listener-container connection-factory="queueConnectionFactory"
+        message-converter="jsonConverter">
+        <rabbit:listener queues="agent-queue" ref="messageAgentReceiver" method="onAgentMessage"/>
+    </rabbit:listener-container>
+
+    <bean id="messageAgentReceiver" class="com.msi.tough.monitor.connector.receive.CollectDAgentReceiver"></bean>
+
+    <bean id="measurehandler" class="com.msi.tough.monitor.common.manager.RDBMSMeasureHandler"></bean>
+
+    <bean id="dimensionHelper" class="com.msi.tough.monitor.common.model.helper.DimensionHelper"></bean>
+
+    <bean id="agentMessageFactory" class="com.msi.tough.monitor.connector.receive.AgentMessageFactory"></bean>
+
+    <bean id="alarmModelHelper" class="com.msi.tough.monitor.common.model.helper.AlarmModelHelper"></bean>
+
+    <bean id="actionHelper" class="com.msi.tough.query.ActionHelper">
+    </bean>
+
+    <!-- Run common annotations; e.g. PostConstruct/PreDestroy. -->
+    <context:annotation-config />
+
+    <bean id="appctx" factory-method="getInstanceForInjection"
+        class="com.msi.tough.core.Appctx">
+        <property name="configuration" ref="configuration"/>
+    </bean>
+
+    <bean class="com.msi.tough.core.AppctxInjector"/>
+
+    <bean id="hibernateUtil" class="com.msi.tough.core.HibernateUtil">
+        <property name="sessionFactory" ref="sessionFactory" />
+    </bean>
+
+    <tx:annotation-driven transaction-manager="txManager"/>
+
+    <!-- Redefine session factory; this app uses annotations for transactions -->
+    <bean id="sessionFactory"
+        class="org.springframework.orm.hibernate3.LocalSessionFactoryBean">
+        <property name="dataSource" ref="msiDS" />
+        <property name="configLocation" value="classpath:hibernate.cfg.xml"></property>
+        <property name="configurationClass" value="org.hibernate.cfg.AnnotationConfiguration"></property>
+        <property name="hibernateProperties">
+            <value>hibernate.dialect=org.hibernate.dialect.MySQL5InnoDBDialect
+                hibernate.cache.provider_class=org.hibernate.cache.NoCacheProvider
+                hibernate.show_sql=false
+                hibernate.hbm2ddl.auto=update
+            </value>
+        </property>
+    </bean>
+
+    <bean id="alarmModelHelperXx" class="com.msi.tough.monitor.common.model.helper.AlarmModelHelper">
+        <property name="sessionFactory" ref="sessionFactory" />
+    </bean>
+
+    <!-- Scheduler jobs, specify a JobDetailBean and SimpleTriggerBean for each job, and pass in the Trigger bean to the jobs list -->
+	<bean id="jobs" class="java.util.ArrayList">
+		<constructor-arg>
+			<list>
+            <!--
+				<ref bean="GatherInstancesDataTrigger" />
+				<ref bean="GatherLoadBalancerTrigger" />
+				<ref bean="GatherECacheTrigger" />
+                 -->
+				<ref bean="CheckAlarmsTrigger" />
+			</list>
+		</constructor-arg>
+	</bean>
+
+	<bean id="GatherInstancesDataJob" class="org.springframework.scheduling.quartz.JobDetailBean">
+		<property name="jobClass" value="com.msi.tough.scheduler.http.HttpService" />
+		<property name="jobDataAsMap">
+			<map>
+				<entry key="url" value="http://SRVHOST:8080/ASInternal" />
+				<entry key="parameters" value="Action=GatherInstancesData" />
+			</map>
+		</property>
+	</bean>
+
+	<bean id="GatherInstancesDataTrigger" class="org.springframework.scheduling.quartz.SimpleTriggerBean">
+		<property name="jobDetail" ref="GatherInstancesDataJob" />
+		<property name="startDelay" value="1000" />
+		<property name="repeatInterval" value="60000" />
+	</bean>
+
+	<bean id="GatherLoadBalancerJob" class="org.springframework.scheduling.quartz.JobDetailBean">
+		<property name="jobClass" value="com.msi.tough.scheduler.http.HttpService" />
+		<property name="jobDataAsMap">
+			<map>
+				<entry key="url" value="http://SRVHOST:8080/Monitor" />
+				<entry key="parameters" value="Action=GatherLoadBalancer" />
+			</map>
+		</property>
+	</bean>
+
+	<bean id="GatherLoadBalancerTrigger" class="org.springframework.scheduling.quartz.SimpleTriggerBean">
+		<property name="jobDetail" ref="GatherLoadBalancerJob" />
+		<property name="startDelay" value="1000" />
+		<property name="repeatInterval" value="60000" />
+	</bean>
+
+	<bean id="GatherRDBMSJob" class="org.springframework.scheduling.quartz.JobDetailBean">
+		<property name="jobClass" value="com.msi.tough.scheduler.http.HttpService" />
+		<property name="jobDataAsMap">
+			<map>
+				<entry key="url" value="http://SRVHOST:8080/Monitor" />
+				<entry key="parameters" value="Action=GatherRDBMS" />
+			</map>
+		</property>
+	</bean>
+
+	<bean id="GatherRDBMSTrigger" class="org.springframework.scheduling.quartz.SimpleTriggerBean">
+		<property name="jobDetail" ref="GatherRDBMSJob" />
+		<property name="startDelay" value="1000" />
+		<property name="repeatInterval" value="60000" />
+	</bean>
+
+
+	<bean id="GatherECacheJob" class="org.springframework.scheduling.quartz.JobDetailBean">
+		<property name="jobClass" value="com.msi.tough.scheduler.http.HttpService" />
+		<property name="jobDataAsMap">
+			<map>
+				<entry key="url" value="http://SRVHOST:8080/Monitor" />
+				<entry key="parameters" value="Action=GatherECache" />
+			</map>
+		</property>
+	</bean>
+
+	<bean id="GatherECacheTrigger" class="org.springframework.scheduling.quartz.SimpleTriggerBean">
+		<property name="jobDetail" ref="GatherECacheJob" />
+		<property name="startDelay" value="1000" />
+		<property name="repeatInterval" value="60000" />
+	</bean>
+
+	<bean id="CheckAlarmsJob" class="org.springframework.scheduling.quartz.JobDetailBean">
+		<property name="jobClass" value="com.msi.tough.scheduler.http.HttpService" />
+		<property name="jobDataAsMap">
+			<map>
+				<entry key="url" value="http://SRVHOST:8080/Monitor" />
+				<entry key="parameters" value="Action=CheckAlarms" />
+			</map>
+		</property>
+	</bean>
+
+	<bean id="CheckAlarmsTrigger" class="org.springframework.scheduling.quartz.SimpleTriggerBean">
+		<property name="jobDetail" ref="CheckAlarmsJob" />
+		<property name="startDelay" value="1000" />
+		<property name="repeatInterval" value="60000" />
+	</bean>
+</beans>

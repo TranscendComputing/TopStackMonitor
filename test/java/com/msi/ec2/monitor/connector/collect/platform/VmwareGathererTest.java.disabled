@@ -1,0 +1,140 @@
+/**
+ *
+ */
+package com.msi.ec2.monitor.connector.collect.platform;
+
+import static org.junit.Assert.assertTrue;
+
+import java.util.HashMap;
+import java.util.List;
+
+
+import com.msi.tough.model.monitor.HypervisorConfigBean;
+import com.msi.tough.model.monitor.MeasureBean;
+import com.msi.tough.monitor.Monitor;
+import com.msi.tough.monitor.common.manager.MeasureHandler;
+import com.msi.tough.monitor.common.model.VirtualMachineInstance;
+import com.msi.tough.monitor.common.model.exception.MSIMonitorException;
+import com.msi.tough.monitor.connector.HypervisorConnectionFactory;
+import com.msi.tough.monitor.connector.HypervisorConnector;
+import com.msi.tough.monitor.connector.collect.platform.VmwareGatherer;
+
+/**
+ * @author heathm
+ */
+public class VmwareGathererTest
+{
+
+    public static HypervisorConnector getConnector()
+    {
+        HypervisorConfigBean conf = new HypervisorConfigBean();
+        conf.setHost("172.16.5.12");
+        conf.setUsername("hmalmstrom");
+        conf.setPassword("scoobySn4ck");
+        conf.setProto("https");
+        conf.setType("vmware");
+        HashMap<String, String> opts = new HashMap<String, String>();
+        opts.put("protocol", "https");
+        opts.put("ignorecert", "true");
+        conf.setOptions(opts);
+        HypervisorConnector conn =
+            HypervisorConnectionFactory.getConnector(conf);
+        conn.setGatherer(new VmwareGatherer(opts));
+        return conn;
+    }
+
+    /**
+     * Test method for
+     * {@link com.msi.tough.monitor.connector.collect.platform.VmwareGatherer#getCPUUtilization(com.msi.tough.monitor.connector.HypervisorConnector, java.lang.String)}
+     * .
+     */
+    //@Test
+    public void testGetCPUUtilization() throws Exception
+    {
+
+        HypervisorConnector conn = getConnector();
+        assertTrue(conn != null);
+        // assertTrue(conn.connect());
+        List<VirtualMachineInstance> instances = conn.getGuestDomains();
+        Monitor mon = new Monitor(conn, instances);
+        mon.setMeasureHandler(new MeasureHandler()
+        {
+            @Override
+            public void store(Object session, MeasureBean measure)
+                    throws MSIMonitorException {
+                System.out.println("Faking storage of [" + measure.getName()
+                        + ":" + measure.getValue() + ":" //+ measure.getInstanceId()
+                        + "]");
+            }
+
+            public void storeAll(Object session, List<MeasureBean> measures)
+                    throws MSIMonitorException {
+                // TODO Auto-generated method stub
+
+            }
+        });
+        mon.gather();
+        // long result = getCPUUtilization();
+    }
+    //
+    // /**
+    // * Test method for {@link
+    // com.msi.ec2.monitor.connector.collect.platform.VmwareGatherer#getNetworkIn(com.msi.ec2.monitor.connector.HypervisorConnector,
+    // java.lang.String, java.lang.String)}.
+    // */
+    // @Test
+    // public void testGetNetworkIn() {
+    // fail("Not yet implemented");
+    // }
+    //
+    // /**
+    // * Test method for {@link
+    // com.msi.ec2.monitor.connector.collect.platform.VmwareGatherer#getNetworkOut(com.msi.ec2.monitor.connector.HypervisorConnector,
+    // java.lang.String, java.lang.String)}.
+    // */
+    // @Test
+    // public void testGetNetworkOut() {
+    // fail("Not yet implemented");
+    // }
+    //
+    // /**
+    // * Test method for {@link
+    // com.msi.ec2.monitor.connector.collect.platform.VmwareGatherer#getDiskWriteOps(com.msi.ec2.monitor.connector.HypervisorConnector,
+    // java.lang.String, java.lang.String)}.
+    // */
+    // @Test
+    // public void testGetDiskWriteOps() {
+    // fail("Not yet implemented");
+    // }
+    //
+    // /**
+    // * Test method for {@link
+    // com.msi.ec2.monitor.connector.collect.platform.VmwareGatherer#getDiskReadOps(com.msi.ec2.monitor.connector.HypervisorConnector,
+    // java.lang.String, java.lang.String)}.
+    // */
+    // @Test
+    // public void testGetDiskReadOps() {
+    // fail("Not yet implemented");
+    // }
+    //
+    // /**
+    // * Test method for {@link
+    // com.msi.ec2.monitor.connector.collect.platform.VmwareGatherer#getDiskWriteBytes(com.msi.ec2.monitor.connector.HypervisorConnector,
+    // java.lang.String, java.lang.String)}.
+    // */
+    // @Test
+    // public void testGetDiskWriteBytes() {
+    // fail("Not yet implemented");
+    // }
+    //
+    // /**
+    // * Test method for {@link
+    // com.msi.ec2.monitor.connector.collect.platform.VmwareGatherer#getDiskReadBytes(com.msi.ec2.monitor.connector.HypervisorConnector,
+    // java.lang.String, java.lang.String)}.
+    // */
+    // @Test
+    // public void testGetDiskReadBytes() {
+    // fail("Not yet implemented");
+    // }
+
+}

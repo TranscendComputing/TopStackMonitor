@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE log4j:configuration SYSTEM "log4j.dtd">
+
+<log4j:configuration debug="false">
+    <appender name="CONSOLE" class="org.apache.log4j.ConsoleAppender">
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="%-5p %c{1} - %m%n"/>
+        </layout>
+    </appender>
+
+    <logger name="org.apache">
+        <level value="WARN"/>
+    </logger>
+
+    <logger name="servletunit.struts">
+        <level value="INFO"/>
+    </logger>
+
+    <logger name="net.sf.hibernate">
+        <level value="WARN"/>
+    </logger>
+
+    <logger name="com.opensymphony.oscache">
+        <level value="WARN"/>
+    </logger>
+
+    <logger name="org.springframework">
+        <level value="INFO"/>
+    </logger>
+
+    <logger name="com.msi">
+        <level value="DEBUG"/>
+    </logger>
+
+    <logger name="com.transcend">
+        <level value="DEBUG"/>
+    </logger>
+
+    <root>
+        <level value="ERROR"/>
+        <appender-ref ref="CONSOLE"/>
+    </root>
+</log4j:configuration>
