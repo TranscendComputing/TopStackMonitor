@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.msi.tough.monitor;
 
@@ -8,15 +8,15 @@ import java.util.Map;
 
 /**
  * This is all the necessary information to connect to a hypervisor.
- * 
+ *
  * @author heathm
- * 
+ *
  */
 public class HypervisorConfig {
 	private String username;
 	private String type;
 	private String proto;
-	private String password; // TODO: make encrypted
+	private String password;
 	private String host;
 	private Map<String, String> options = new HashMap<String, String>();
 
@@ -31,7 +31,7 @@ public class HypervisorConfig {
 	public String getOption(String name) {
 		return this.options.get(name);
 	}
-	
+
 	public String getHost() {
 		return host;
 	}

@@ -25,7 +25,6 @@ public class ViewHypervisorConfig extends AbstractAction<Object> {
 	@Override
 	public String marshall(MarshallStruct<Object> input,
 			HttpServletResponse resp) throws Exception {
-		// TODO Auto-generated method stub
 		logger.debug("Marshalling the response into the xml format...");
 		XMLNode vhcr = new XMLNode("ViewHypervisorConfigResponse");
 		XMLNode vhcres = new XMLNode("ViewHypervisorConfigResult");

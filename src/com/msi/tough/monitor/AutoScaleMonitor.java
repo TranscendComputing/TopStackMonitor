@@ -57,7 +57,6 @@ public class AutoScaleMonitor implements Runnable {
 			} catch (final InterruptedException ie) {
 				runner = null;
 			} catch (final MSIMonitorException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}

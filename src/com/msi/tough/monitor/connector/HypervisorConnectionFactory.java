@@ -3,10 +3,8 @@ package com.msi.tough.monitor.connector;
 import java.util.Map;
 
 import com.msi.tough.model.monitor.HypervisorConfigBean;
-import com.msi.tough.monitor.connector.collect.platform.VmwareGatherer;
 import com.msi.tough.monitor.connector.collect.platform.XenGatherer;
 import com.msi.tough.monitor.connector.platform.VirtConnector;
-import com.msi.tough.monitor.connector.platform.VmwareConnector;
 
 public class HypervisorConnectionFactory {
 
@@ -24,12 +22,6 @@ public class HypervisorConnectionFactory {
 					username, password, host, options);
 			xenConnector.setGatherer(new XenGatherer(options));
 			return xenConnector;
-		} else if ("vmware".equalsIgnoreCase(type)) {
-			options.putAll(conf.getOptions());
-			final VmwareConnector connector = new VmwareConnector(type, proto,
-					username, password, host, options);
-			connector.setGatherer(new VmwareGatherer(options));
-			return connector;
 		}
 		return null;
 	}

@@ -45,8 +45,6 @@ public class ReloadHypervisorConfig extends AbstractAction<Object> {
 	public Object process0(final Session session, final HttpServletRequest req,
 			final HttpServletResponse resp, final Map<String, String[]> map)
 			throws Exception {
-		// TODO Auto-generated method stub
-
 		// Get all application-scoped attributes
 		final ServletContext sc = req.getSession().getServletContext();
 

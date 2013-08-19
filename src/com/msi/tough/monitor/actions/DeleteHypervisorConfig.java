@@ -39,7 +39,6 @@ public class DeleteHypervisorConfig extends AbstractAction<Object> {
 	public Object process0(Session session, HttpServletRequest req,
 			HttpServletResponse resp, Map<String, String[]> map)
 			throws Exception {
-		// TODO Auto-generated method stub
 		unmarshall(req);
 
 		logger.debug("Deleting HypervisorConfig...");
@@ -58,9 +57,6 @@ public class DeleteHypervisorConfig extends AbstractAction<Object> {
 
 		host = req.getParameter("Host");
 
-		if (host == null) {
-			// TODO throw error
-		}
 	}
 
 }

@@ -17,7 +17,6 @@ public class PushMeasure extends AbstractAction<Object> {
 	@Override
 	public String marshall(MarshallStruct<Object> input,
 			HttpServletResponse resp) throws Exception {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
