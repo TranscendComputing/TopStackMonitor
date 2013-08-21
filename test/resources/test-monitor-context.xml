@@ -87,13 +87,13 @@
     </bean>
 
     <bean id="DB_URL" class="java.lang.String">
-        <constructor-arg value="jdbc:mysql://localhost:3306/msi?autoReconnect=true"></constructor-arg>
+        <constructor-arg value="jdbc:mysql://localhost:3306/${db.user}?autoReconnect=true"></constructor-arg>
     </bean>
     <bean id="BIND_DB_URL" class="java.lang.String">
         <constructor-arg value="jdbc:mysql://localhost:3306/bind?autoReconnect=true"></constructor-arg>
     </bean>
     <bean id="DB_USERNAME" class="java.lang.String">
-        <constructor-arg value="msi"></constructor-arg>
+        <constructor-arg value="${db.user}"></constructor-arg>
     </bean>
     <bean id="DB_PASSWORD" class="java.lang.String">
         <constructor-arg value="${db.password}"></constructor-arg>
