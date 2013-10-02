@@ -29,6 +29,7 @@ import com.msi.tough.dasein.DaseinHelper;
 import com.msi.tough.engine.aws.Arn;
 import com.msi.tough.model.ASGroupBean;
 import com.msi.tough.model.AccountBean;
+import com.msi.tough.model.InstanceBean;
 import com.msi.tough.model.monitor.AlarmBean;
 import com.msi.tough.model.monitor.DimensionBean;
 import com.msi.tough.monitor.common.MonitorConstants;
@@ -157,12 +158,10 @@ public class CheckAlarms extends UnsecuredAction {
 							.doubleValue() * alarm.getPeriod().doubleValue()),
 					dimensions);
 		} else {
-			final String insts = asg.getInstances();
-			final CommaObject instl = new CommaObject(insts);
-
-			for (final String inst : instl.toList()) {
+			final List<InstanceBean> insts = asg.getScaledInstances(session);
+			for (final InstanceBean inst : insts) {
 				final DimensionBean idim = dimensionHelper.getDimensionBean(
-						"InstanceId", inst, false);
+						"InstanceId", inst.getInstanceId(), false);
 				final Set<DimensionBean> dimensions = new HashSet<DimensionBean>();
 				dimensions.add(idim);
 				final Stats current = getMeasures(session, alarm.getMetricName(),

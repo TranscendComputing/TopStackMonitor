@@ -1,0 +1,2 @@
+monitor.port =5560
+response.monitor.port=5561

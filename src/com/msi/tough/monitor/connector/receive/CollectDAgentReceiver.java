@@ -24,6 +24,7 @@ import com.msi.tough.model.monitor.MeasureBean;
 import com.msi.tough.monitor.common.manager.MeasureHandler;
 import com.msi.tough.monitor.common.model.exception.MSIMonitorException;
 import com.msi.tough.utils.InstanceUtil;
+import com.transcend.compute.client.util.RunningInstanceUtil;
 
 /**
  * Message driven bean to receive statistics from an agent.
@@ -45,6 +46,9 @@ public class CollectDAgentReceiver implements AgentReceiver {
 
     @Autowired
     private AgentMessageFactory factory = null;
+
+    @Autowired
+    private RunningInstanceUtil runningInstanceUtil = null;
 
     private int messagesReceived = 0;
     private int measuresCreated = 0;
@@ -97,7 +101,7 @@ public class CollectDAgentReceiver implements AgentReceiver {
     private AgentMessage hydrateMessage(Map<String, Object> value_map) {
         String host = value_map.get("host").toString();
         Session session = sessionFactory.getCurrentSession();
-        host = InstanceUtil.normalizeInstanceId(session, host);
+        host = runningInstanceUtil.normalizeInstanceId(session, host, true);
         factory.host = host;
 
         factory.plugin = value_map.get("plugin").toString();
