@@ -23,14 +23,16 @@
     <bean id="servicesPropertyConfigurer"
         class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
         <property name="systemPropertiesModeName" value="SYSTEM_PROPERTIES_MODE_OVERRIDE" />
-        <property name="ignoreUnresolvablePlaceholders" value="false" />
+        <property name="ignoreUnresolvablePlaceholders" value="true" />
+        <property name="ignoreResourceNotFound" value="true"/>
         <property name="locations">
                 <list>
                         <value>classpath*:/*.properties</value>
+                        <value>classpath*:/monitor.ports</value>
+                        <value>classpath*:/compute.ports</value>
                 </list>
         </property>
     </bean>
-
     <bean id="accessKey" class="java.lang.String">
         <constructor-arg value="${test.accessKey}"/>
     </bean>
@@ -59,6 +61,56 @@
         <!-- This is the default for Unix, but OSX/Windows expect different -->
         <entry key="socket" value="/var/run/libvirt/libvirt-sock"></entry>
     </util:map>
+
+    <util:map id="actions">
+    </util:map>
+
+    <bean id="monitorServiceAsync"
+        class="com.msi.tough.query.AsyncServiceImpl">
+        <constructor-arg ref="actions"/>
+    </bean>
+
+    <!-- compute setup, for creating/describing instances -->
+
+    <util:list id="computePossibleTypes">
+        <value>com.msi.tough.message.CoreMessage$ErrorResult</value>
+        <value>com.transcend.compute.message.RunInstancesMessage$RunInstancesResponseMessage</value>
+        <value>com.transcend.compute.message.DescribeInstancesMessage$DescribeInstancesResponseMessage</value>
+    </util:list>
+
+    <bean id="remoteEndpoint" class="java.lang.String">
+        <constructor-arg value="tcp://${compute.host}:${compute.port}"/>
+    </bean>
+
+    <bean id="returnAddress" class="java.lang.String">
+        <constructor-arg value="tcp://${compute.host}:${response.monitor.port}"/>
+    </bean>
+
+    <bean id="recvEndpoint" class="java.lang.String">
+        <constructor-arg value="tcp://*:${response.monitor.port}"/>
+    </bean>
+
+    <bean id="remoteComputeWorkflow" factory-method="getInstance" destroy-method="destroy"
+    class="com.msi.tough.workflow.core.RemoteWorkflow">
+        <property name="remoteEndpoint" ref="remoteEndpoint" />
+        <property name="recvEndpoint" ref="recvEndpoint" />
+        <property name="returnAddress" ref="returnAddress" />
+        <property name="possibleTypes" ref="computePossibleTypes"/>
+    </bean>
+
+    <bean id="remoteIgniter"
+        class="com.msi.tough.workflow.core.RemoteIgniter">
+    </bean>
+
+    <bean id="toCompute"
+        class="com.msi.tough.workflow.WorkflowSubmitter">
+        <property name="workflow" ref="remoteComputeWorkflow"/>
+        <property name="workflowIgniter" ref="remoteIgniter"/>
+    </bean>
+
+    <bean id="runningInstanceUtil"
+        class="com.transcend.compute.client.util.RunningInstanceUtil">
+    </bean>
 
     <!-- hibernate configurations -->
     <tx:annotation-driven transaction-manager="transactionManager"/>
