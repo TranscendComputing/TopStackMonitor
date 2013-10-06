@@ -13,7 +13,6 @@ import org.hibernate.Session;
 import org.slf4j.Logger;
 
 import com.msi.tough.core.Appctx;
-import com.msi.tough.core.CommaObject;
 import com.msi.tough.model.ASGroupBean;
 import com.msi.tough.model.monitor.DimensionBean;
 import com.msi.tough.model.monitor.MeasureBean;
@@ -37,16 +36,10 @@ public class GatherAS extends UnsecuredAction {
         final MeasureHandler mHandler = Appctx.getBean("measurehandler");
         final List<ASGroupBean> list = s.createQuery("from ASGroupBean").list();
         for (final ASGroupBean asg : list) {
-            // if (!cluster.getLbStatus().endsWith("ready")) {
-            // logger.debug("Ignoring AC " + cluster.getUserId() + " LB "
-            // + cluster.getLoadBalancerName() + " Status "
-            // + cluster.getLbStatus());
-            // continue;
-            // }
             final long acid = asg.getUserId();
-            logger.debug("Gather AC " + acid + " Cluster " + asg.getName());
-            //final AccountBean acb = AccountUtil.readAccount(s, acid);
-            //final AccountType ac = AccountUtil.toAccount(acb);
+            if (logger.isDebugEnabled() && !isLessVerbose()) {
+                    logger.debug("Gather AC " + acid + " Cluster " + asg.getName());
+            }
 
             final DimensionBean dim = CWUtil.getDimensionBean(s, acid,
                     "AutoScalingGroupName", asg.getName(), true);
