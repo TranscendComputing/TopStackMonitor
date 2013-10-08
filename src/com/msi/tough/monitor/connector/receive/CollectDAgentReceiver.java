@@ -154,13 +154,13 @@ public class CollectDAgentReceiver implements AgentReceiver {
             count = 0;
         }
         countByType.put(message.getClass(), count+1);
-        if (messagesReceived % 5 == 0) {
-            logger.info("Received " + messagesReceived +
+        if (messagesReceived % 5 == 0 && logger.isDebugEnabled()) {
+            logger.debug("Received " + messagesReceived +
                     " agent messages for monitoring.");
-            logger.info("Created " + measuresCreated +
+            logger.debug("Created " + measuresCreated +
                     " metric values.");
             for (Class<?> key: countByType.keySet() ) {
-                logger.info("Saved " + countByType.get(key) +
+                logger.debug("Saved " + countByType.get(key) +
                         " messages of type " + key.getSimpleName());
             }
         }
