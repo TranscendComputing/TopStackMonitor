@@ -23,7 +23,6 @@ import com.msi.tough.core.Appctx;
 import com.msi.tough.model.monitor.MeasureBean;
 import com.msi.tough.monitor.common.manager.MeasureHandler;
 import com.msi.tough.monitor.common.model.exception.MSIMonitorException;
-import com.msi.tough.utils.InstanceUtil;
 import com.transcend.compute.client.util.RunningInstanceUtil;
 
 /**
